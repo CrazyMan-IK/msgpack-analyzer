@@ -31,7 +31,7 @@ var Unpacker = /** @class */ (function () {
         else if ((v & 0xf0) == 0x80 || v == 0xde || v == 0xdf)
             res = this.unpackMap();
         else
-            throw new Error("Cannot unpack byte: '" + v + "' offset: '" + this._offset + "'");
+            throw new Error("Cannot unpack byte: '0x" + v.toString(16).toUpperCase() + "' offset: '" + this._offset + "'");
         return res;
     };
     Unpacker.prototype.unpackNull = function () {
@@ -40,7 +40,7 @@ var Unpacker = /** @class */ (function () {
             this._offset++;
             return null;
         }
-        throw new Error("Try to unpack null value, but it's not an null, byte = " + v);
+        throw new Error("Try to unpack null value, but it's not an null, byte = 0x" + v.toString(16).toUpperCase());
     };
     Unpacker.prototype.unpackBool = function () {
         var v = this._view.getUint8(this._offset);
@@ -58,7 +58,7 @@ var Unpacker = /** @class */ (function () {
             this._offset += 1;
         }
         else {
-            throw new Error("Try to unpack bool value, but it's not an bool, byte = " + v);
+            throw new Error("Try to unpack bool value, but it's not an bool, byte = 0x" + v.toString(16).toUpperCase());
         }
         return res;
     };
@@ -105,7 +105,7 @@ var Unpacker = /** @class */ (function () {
             this._offset += 8;
         }
         else {
-            throw new Error("Try to unpack integer value, but it's not an integer, byte = " + v);
+            throw new Error("Try to unpack integer value, but it's not an integer, byte = 0x" + v.toString(16).toUpperCase());
         }
         return res;
     };
@@ -124,7 +124,7 @@ var Unpacker = /** @class */ (function () {
             this._offset += 8;
         }
         else {
-            throw new Error("Try to unpack float value, but it's not an float, byte = " + v);
+            throw new Error("Try to unpack float value, but it's not an float, byte = 0x" + v.toString(16).toUpperCase());
         }
         return res;
     };
@@ -152,7 +152,7 @@ var Unpacker = /** @class */ (function () {
             this._offset += 4;
         }
         else {
-            throw new Error("Try to unpack string value, but it's not an string, byte = " + v);
+            throw new Error("Try to unpack string value, but it's not an string, byte = 0x" + v.toString(16).toUpperCase());
         }
         var res = this._decoder.decode(new Uint8Array(this._buf.buffer, this._offset, len));
         this._offset += len;
@@ -182,7 +182,7 @@ var Unpacker = /** @class */ (function () {
             this._offset += 4;
         }
         else {
-            throw new Error("Try to unpack binary value, but it's not an binary, byte = " + v);
+            throw new Error("Try to unpack binary value, but it's not an binary, byte = 0x" + v.toString(16).toUpperCase());
         }
         var res = new Uint8Array(this._buf.buffer.slice(this._buf.byteOffset, this._offset));
         this._offset += len;
@@ -208,7 +208,7 @@ var Unpacker = /** @class */ (function () {
             this._offset += 4;
         }
         else {
-            throw new Error("Try to unpack List length value, but it's not an List lenght, byte = " + v);
+            throw new Error("Try to unpack List length value, but it's not an List lenght, byte = 0x" + v.toString(16).toUpperCase());
         }
         return len;
     };
@@ -232,7 +232,7 @@ var Unpacker = /** @class */ (function () {
             this._offset += 4;
         }
         else {
-            throw new Error("Try to unpack Map length value, but it's not an Map lenght, byte = " + v);
+            throw new Error("Try to unpack Map length value, but it's not an Map lenght, byte = 0x" + v.toString(16).toUpperCase());
         }
         return len;
     };

@@ -19,7 +19,7 @@ console.log(hex);
 
 let up = new Unpacker(bytes);
 
-let v1 = up.unpack();
+let v1 = up.unpackString();
 console.log(v1);
 
 /*

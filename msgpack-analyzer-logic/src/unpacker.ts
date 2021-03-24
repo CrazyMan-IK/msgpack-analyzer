@@ -24,7 +24,7 @@ class Unpacker {
     else if (v == 0xc4 || v == 0xc5 || v == 0xc6) res = this.unpackBinary();
     else if ((v & 0xf0) == 0x90 || v == 0xdc || v == 0xdd) res = this.unpackList();
     else if ((v & 0xf0) == 0x80 || v == 0xde || v == 0xdf) res = this.unpackMap();
-    else throw new Error(`Cannot unpack byte: '${v}' offset: '${this._offset}'`);
+    else throw new Error(`Cannot unpack byte: '0x${v.toString(16).toUpperCase()}' offset: '${this._offset}'`);
 
     return res;
   }
@@ -37,7 +37,7 @@ class Unpacker {
       return null;
     }
 
-    throw new Error(`Try to unpack null value, but it's not an null, byte = ${v}`);
+    throw new Error(`Try to unpack null value, but it's not an null, byte = 0x${v.toString(16).toUpperCase()}`);
   }
 
   public unpackBool(): boolean | null {
@@ -54,7 +54,7 @@ class Unpacker {
       res = false;
       this._offset += 1;
     } else {
-      throw new Error(`Try to unpack bool value, but it's not an bool, byte = ${v}`);
+      throw new Error(`Try to unpack bool value, but it's not an bool, byte = 0x${v.toString(16).toUpperCase()}`);
     }
 
     return res;
@@ -94,7 +94,7 @@ class Unpacker {
       res = this._view.getBigInt64(++this._offset);
       this._offset += 8;
     } else {
-      throw new Error(`Try to unpack integer value, but it's not an integer, byte = ${v}`);
+      throw new Error(`Try to unpack integer value, but it's not an integer, byte = 0x${v.toString(16).toUpperCase()}`);
     }
 
     return res;
@@ -113,7 +113,7 @@ class Unpacker {
       res = this._view.getFloat64(++this._offset);
       this._offset += 8;
     } else {
-      throw new Error(`Try to unpack float value, but it's not an float, byte = ${v}`);
+      throw new Error(`Try to unpack float value, but it's not an float, byte = 0x${v.toString(16).toUpperCase()}`);
     }
 
     return res;
@@ -139,7 +139,7 @@ class Unpacker {
       len = this._view.getUint32(++this._offset);
       this._offset += 4;
     } else {
-      throw new Error(`Try to unpack string value, but it's not an string, byte = ${v}`);
+      throw new Error(`Try to unpack string value, but it's not an string, byte = 0x${v.toString(16).toUpperCase()}`);
     }
 
     const res = this._decoder.decode(new Uint8Array(this._buf.buffer, this._offset, len));
@@ -168,7 +168,7 @@ class Unpacker {
       len = this._view.getUint32(++this._offset);
       this._offset += 4;
     } else {
-      throw new Error(`Try to unpack binary value, but it's not an binary, byte = ${v}`);
+      throw new Error(`Try to unpack binary value, but it's not an binary, byte = 0x${v.toString(16).toUpperCase()}`);
     }
 
     const res = new Uint8Array(this._buf.buffer.slice(this._buf.byteOffset, this._offset));
@@ -194,7 +194,7 @@ class Unpacker {
       len = this._view.getUint32(++this._offset);
       this._offset += 4;
     } else {
-      throw new Error(`Try to unpack List length value, but it's not an List lenght, byte = ${v}`);
+      throw new Error(`Try to unpack List length value, but it's not an List lenght, byte = 0x${v.toString(16).toUpperCase()}`);
     }
 
     return len;
@@ -217,7 +217,7 @@ class Unpacker {
       len = this._view.getUint32(++this._offset);
       this._offset += 4;
     } else {
-      throw new Error(`Try to unpack Map length value, but it's not an Map lenght, byte = ${v}`);
+      throw new Error(`Try to unpack Map length value, but it's not an Map lenght, byte = 0x${v.toString(16).toUpperCase()}`);
     }
 
     return len;
