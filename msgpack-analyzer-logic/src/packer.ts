@@ -20,6 +20,7 @@ class Packer {
       const newBuf = new Uint8Array(this._bufSize);
       newBuf.set(this._buf, 0);
       this._buf = newBuf;
+      this._view = new DataView(this._buf.buffer, 0, this._bufSize);
     }
   }
 
@@ -116,10 +117,6 @@ class Packer {
     this._tryResize(9);
     if (v == null) {
       this._view.setUint8(this._offset++, 0xc0);
-    } else if (v <= 3.40282e38) {
-      this._view.setUint8(this._offset++, 0xca);
-      this._view.setFloat32(this._offset, v);
-      this._offset += 4;
     } else {
       this._view.setUint8(this._offset++, 0xcb);
       this._view.setFloat64(this._offset, v);
@@ -281,3 +278,4 @@ class Packer {
 }
 
 module.exports = Packer;
+export default Packer;
