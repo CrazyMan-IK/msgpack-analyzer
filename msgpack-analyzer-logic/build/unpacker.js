@@ -11,6 +11,13 @@ var Unpacker = /** @class */ (function () {
         this._view = new DataView(this._buf.buffer, 0, this._buf.length);
         this._decoder = new util_1.default.TextDecoder();
     }
+    Object.defineProperty(Unpacker.prototype, "offset", {
+        get: function () {
+            return this._offset;
+        },
+        enumerable: false,
+        configurable: true
+    });
     Unpacker.prototype.unpack = function () {
         var v = this._view.getUint8(this._offset);
         var res;
@@ -252,7 +259,16 @@ var Unpacker = /** @class */ (function () {
         }
         return res;
     };
+    Unpacker.prototype.reset = function (data) {
+        if (data === void 0) { data = null; }
+        this._offset = 0;
+        if (data !== null) {
+            this._buf = data;
+            this._view = new DataView(this._buf.buffer, 0, this._buf.length);
+        }
+    };
     return Unpacker;
 }());
 module.exports = Unpacker;
+exports.default = Unpacker;
 //# sourceMappingURL=unpacker.js.map

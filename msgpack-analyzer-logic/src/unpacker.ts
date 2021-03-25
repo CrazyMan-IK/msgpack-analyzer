@@ -6,6 +6,10 @@ class Unpacker {
   private _view: DataView;
   private _decoder: util.TextDecoder;
 
+  get offset(): number {
+    return this._offset;
+  }
+
   public constructor(data: Uint8Array) {
     this._buf = data;
     this._view = new DataView(this._buf.buffer, 0, this._buf.length);
@@ -244,6 +248,15 @@ class Unpacker {
 
     return res;
   }
+
+  public reset(data: Uint8Array | null = null): void {
+    this._offset = 0;
+    if (data !== null) {
+      this._buf = data;
+      this._view = new DataView(this._buf.buffer, 0, this._buf.length);
+    }
+  }
 }
 
 module.exports = Unpacker;
+export default Unpacker;

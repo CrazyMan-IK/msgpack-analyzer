@@ -1,5 +1,6 @@
 const Packer = require('../build/packer.js');
 const Unpacker = require('../build/unpacker.js');
+const Analyzer = require('../build/analyzer.js');
 
 let p = new Packer();
 
@@ -16,10 +17,11 @@ const hex = Array.from(bytes, function (byte) {
 }).join('');
 
 console.log(hex);
+console.log();
 
 let up = new Unpacker(bytes);
 
-let v1 = up.unpackString();
+let v1 = up.unpack();
 console.log(v1);
 
 /*
@@ -30,3 +32,9 @@ console.log(v1);
 console.log(v2);
 console.log(v3);
 */
+
+console.log();
+
+let an = new Analyzer(bytes);
+
+console.log(an.analyze());
