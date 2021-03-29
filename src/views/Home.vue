@@ -6,9 +6,9 @@
       </v-col>
       <v-col class="d-flex main-content layout column" cols="8">
         <h1>This is an main page</h1>
-        <v-text-field filled v-model="input" :rules="[rules.hexChecker, rules.isEven]" @input="analyze"> </v-text-field>
+        <v-text-field filled v-model="input" :rules="[rules.notEmpty, rules.hexChecker, rules.isEven]" @input="analyze"> </v-text-field>
         <p ref="output" class="ma-0 mb-8 pa-3 output"></p>
-        <div ref="analyzed" class="pa-3 analyzed fill-height">
+        <div ref="analyzed" class="pa-3 analyzed">
           <!--<p class="anim anim-1">12</p>
           <p>12</p>
           <p class="anim anim-2">23</p>
@@ -32,6 +32,7 @@
 
 <script lang="ts">
 import Vue from 'vue';
+import Analyzer from '@/analyzer/analyzer';
 
 export default Vue.extend({
   name: 'Home',
@@ -39,7 +40,8 @@ export default Vue.extend({
   components: {},
 
   data: () => ({
-    input: '1234567890',
+    input: '92c37b c4024455',
+    analyzer: new Analyzer(),
     rules: {
       hexChecker: (value: string): string | boolean => {
         value = value.replaceAll(' ', '');
@@ -49,6 +51,10 @@ export default Vue.extend({
       isEven: (value: string): string | boolean => {
         value = value.replaceAll(' ', '');
         return value.length % 2 == 0 || 'String length is not even';
+      },
+      notEmpty: (value: string): string | boolean => {
+        value = value.replaceAll(' ', '');
+        return value.length > 0 || 'String is empty';
       }
     }
   }),
@@ -65,9 +71,17 @@ export default Vue.extend({
     },
 
     analyze(): void {
-      if (this.rules.hexChecker(this.input) === true && this.rules.isEven(this.input) === true) {
+      if (this.rules.notEmpty(this.input) === true && this.rules.hexChecker(this.input) === true && this.rules.isEven(this.input) === true) {
         const chunks = this.splitByChunks(this.input.replaceAll(' ', ''), 2);
-        console.log(chunks);
+        const data = Uint8Array.from(
+          chunks.map((x: string) => {
+            return Number.parseInt(x, 16);
+          })
+        );
+
+        const analyzedData = this.analyzer.analyze(data);
+
+        this.$anime.remove('.analyzed > span');
 
         const output = this.$refs['output'] as Element;
         output.textContent = '';
@@ -92,29 +106,37 @@ export default Vue.extend({
           const anim = document.createElement('span');
           const p = document.createElement('p');
 
-          anim.style.top = (output.children[i * 2] as HTMLElement).offsetTop - 75 + 'px' ?? '0';
+          anim.style.top = (output.children[i * 2] as HTMLElement).offsetTop - 80 + 'px' ?? '0';
+          anim.style.left = (output.children[i * 2] as HTMLElement).offsetLeft + 'px' ?? '0';
+          p.style.visibility = 'hidden';
 
           anim.textContent = chunk;
-          p.textContent = chunk;
+          p.textContent = `${chunk} ${analyzedData.get(i)}`;
 
           analyzed.appendChild(anim);
           analyzed.appendChild(p);
         });
 
-        /*
-        const spans = document.querySelectorAll('.output > span');
-        spans.forEach((span: Element) => {
-          span.style = '';
-        });
-
-        //this.$anime.remove('.output > span');
+        const ps = document.querySelectorAll('.analyzed > p');
+        const top = ps.length == 1 ? (ps[0] as HTMLElement).offsetTop : this.$anime.stagger([(ps[0] as HTMLElement).offsetTop, (ps[ps.length - 1] as HTMLElement).offsetTop]);
 
         this.$anime({
-          targets: '.output > span',
-          rotate: '1turn',
-          delay: this.$anime.stagger(100, { from: 2 })
+          targets: '.analyzed > span',
+          top,
+          left: (analyzed.children[1] as HTMLElement).offsetLeft + 'px' ?? '0',
+          delay: this.$anime.stagger(50, { start: 100 }),
+          complete: function () {
+            const anims = document.querySelectorAll('.analyzed > span');
+
+            anims.forEach((anim: Element) => {
+              (anim as HTMLElement).style.visibility = 'hidden';
+            });
+
+            ps.forEach((p: Element) => {
+              (p as HTMLElement).style.visibility = 'visible';
+            });
+          }
         });
-        */
       }
     }
   },
@@ -133,7 +155,7 @@ export default Vue.extend({
 
 .output {
   position: relative;
-  min-height: 48px;
+  flex-basis: 48px;
   border-radius: 30px;
   background-color: #ececec;
 
@@ -148,6 +170,7 @@ export default Vue.extend({
 
 .analyzed {
   position: relative;
+  flex-basis: 100%;
   border-radius: 30px;
   background-color: #ececec;
 

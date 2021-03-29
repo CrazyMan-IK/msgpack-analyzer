@@ -159,23 +159,20 @@ class Unpacker {
     if (v == 0xc0) {
       this._offset += 1;
       return null;
-    } else if ((v & 0xe0) == 0xa0) {
-      len = v & 0x1f;
-      this._offset += 1;
-    } else if (v == 0xd9) {
+    } else if (v == 0xc4) {
       len = this._view.getUint8(++this._offset);
       this._offset += 1;
-    } else if (v == 0xda) {
+    } else if (v == 0xc5) {
       len = this._view.getUint16(++this._offset);
       this._offset += 2;
-    } else if (v == 0xdb) {
+    } else if (v == 0xc6) {
       len = this._view.getUint32(++this._offset);
       this._offset += 4;
     } else {
       throw new Error(`Try to unpack binary value, but it's not an binary, byte = 0x${v.toString(16).toUpperCase()}`);
     }
 
-    const res = new Uint8Array(this._buf.buffer.slice(this._buf.byteOffset, this._offset));
+    const res = new Uint8Array(this._buf.buffer.slice(this._offset, len));
     this._offset += len;
 
     return res;
