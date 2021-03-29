@@ -1,1 +1,1 @@
-{"version":3,"file":"analyzer.d.ts","sourceRoot":"","sources":["../src/analyzer.ts"],"names":[],"mappings":""}
+{"version":3,"file":"analyzer.d.ts","sourceRoot":"","sources":["../src/analyzer.ts"],"names":[],"mappings":"AAEA,aAAK,aAAa,GAAG,GAAG,GAAG,cAAc,GAAG,aAAa,EAAE,CAAC;AAG5D,UAAU,cAAe,SAAQ,GAAG,CAAC,MAAM,EAAE,aAAa,CAAC;CAAG;AAE9D,cAAM,QAAQ;IACZ,OAAO,CAAC,IAAI,CAAa;IACzB,OAAO,CAAC,KAAK,CAAW;IACxB,OAAO,CAAC,SAAS,CAAW;gBAET,IAAI,EAAE,UAAU;IAMnC,OAAO,CAAC,QAAQ;IAqCT,OAAO,IAAI,cAAc;CASjC;AAGD,eAAe,QAAQ,CAAC"}

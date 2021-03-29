@@ -14,6 +14,7 @@ const bytes = p.takeBytes();
 
 /*/
 console.log(bytes);
+//*/
 
 const hex = Array.from(bytes, function (byte) {
   return ('0' + (byte & 0xff).toString(16)).slice(-2);
@@ -22,6 +23,7 @@ const hex = Array.from(bytes, function (byte) {
 console.log(hex);
 console.log();
 
+/*/
 let up = new Unpacker(bytes);
 
 let v1 = up.unpack();

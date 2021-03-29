@@ -51,4 +51,5 @@ var Analyzer = /** @class */ (function () {
     return Analyzer;
 }());
 module.exports = Analyzer;
+exports.default = Analyzer;
 //# sourceMappingURL=analyzer.js.map

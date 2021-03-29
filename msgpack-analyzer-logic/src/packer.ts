@@ -31,7 +31,7 @@ class Packer {
     this._offset += length;
   }
 
-  public pack(v: any): Packer {
+  public pack(v: unknown): Packer {
     if (v === null) this.packNull();
     else if (typeof v === 'boolean') this.packBool(v);
     else if (typeof v === 'number' && Number.isInteger(v)) this.packInt(v);

@@ -284,4 +284,5 @@ var Packer = /** @class */ (function () {
     return Packer;
 }());
 module.exports = Packer;
+exports.default = Packer;
 //# sourceMappingURL=packer.js.map
