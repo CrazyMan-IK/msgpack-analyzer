@@ -170,7 +170,7 @@ class Unpacker {
       throw new Error(`Try to unpack binary value, but it's not an binary, byte = 0x${v.toString(16).toUpperCase()}`);
     }
 
-    const res = new Uint8Array(this._buf.buffer.slice(this._offset, len));
+    const res = new Uint8Array(this._buf.buffer.slice(this._offset, this._offset + len));
     this._offset += len;
 
     return res;

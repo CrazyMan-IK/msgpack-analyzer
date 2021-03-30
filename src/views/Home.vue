@@ -33,6 +33,7 @@
 <script lang="ts">
 import Vue from 'vue';
 import Analyzer from '@/analyzer/analyzer';
+import seedrandom from 'seedrandom';
 
 export default Vue.extend({
   name: 'Home',
@@ -40,7 +41,7 @@ export default Vue.extend({
   components: {},
 
   data: () => ({
-    input: '92c37b c4024455',
+    input: '9292c37b7b c4024455',
     analyzer: new Analyzer(),
     rules: {
       hexChecker: (value: string): string | boolean => {
@@ -68,6 +69,46 @@ export default Vue.extend({
       }
 
       return res;
+    },
+
+    getRandomColor(seed: string): string {
+      const rnd = seedrandom(seed);
+      const letters = '0123456789ABCDEF';
+
+      let color = '#';
+      for (let i = 0; i < 6; i++) {
+        color += letters[Math.floor(rnd() * 16)];
+      }
+
+      return color;
+    },
+
+    getColorBrightness(color: string): number {
+      const isHEX = color.indexOf('#') == 0;
+      const isRGB = color.indexOf('rgb') == 0;
+      let r = 0;
+      let g = 0;
+      let b = 0;
+
+      if (isHEX) {
+        const hasFullSpec = color.length == 7;
+        let m = color.substr(1).match(hasFullSpec ? /(\S{2})/g : /(\S{1})/g);
+        if (m) {
+          r = parseInt(m[0] + (hasFullSpec ? '' : m[0]), 16);
+          g = parseInt(m[1] + (hasFullSpec ? '' : m[1]), 16);
+          b = parseInt(m[2] + (hasFullSpec ? '' : m[2]), 16);
+        }
+      }
+      if (isRGB) {
+        let m = color.match(/(\d+){3}/g);
+        if (m) {
+          r = parseInt(m[0]);
+          g = parseInt(m[1]);
+          b = parseInt(m[2]);
+        }
+      }
+
+      return (r * 299 + g * 587 + b * 114) / 1000;
     },
 
     analyze(): void {
@@ -102,41 +143,89 @@ export default Vue.extend({
         const analyzed = this.$refs['analyzed'] as Element;
         analyzed.textContent = '';
 
+        let parent = analyzed;
+        let oldP = analyzed;
+        let oldNestings = 0;
         chunks.forEach((chunk: string, i: number) => {
-          const anim = document.createElement('span');
-          const p = document.createElement('p');
+          const data = analyzedData.getWithNestings(i);
 
-          anim.style.top = (output.children[i * 2] as HTMLElement).offsetTop - 80 + 'px' ?? '0';
-          anim.style.left = (output.children[i * 2] as HTMLElement).offsetLeft + 'px' ?? '0';
-          p.style.visibility = 'hidden';
+          if (data !== undefined && 'type' in data.value) {
+            const anim = document.createElement('span');
+            const p = document.createElement('p');
+            const inside = document.createElement('span');
 
-          anim.textContent = chunk;
-          p.textContent = `${chunk} ${analyzedData.get(i)}`;
+            anim.className = 'anim';
 
-          analyzed.appendChild(anim);
-          analyzed.appendChild(p);
-        });
+            const back = this.getRandomColor(data.value.type + data.nestings);
+            const bright = this.getColorBrightness(back);
+            const fore = bright >= 128 ? '#000000' : '#ffffff';
 
-        const ps = document.querySelectorAll('.analyzed > p');
-        const top = ps.length == 1 ? (ps[0] as HTMLElement).offsetTop : this.$anime.stagger([(ps[0] as HTMLElement).offsetTop, (ps[ps.length - 1] as HTMLElement).offsetTop]);
+            console.log(bright);
 
-        this.$anime({
-          targets: '.analyzed > span',
-          top,
-          left: (analyzed.children[1] as HTMLElement).offsetLeft + 'px' ?? '0',
-          delay: this.$anime.stagger(50, { start: 100 }),
-          complete: function () {
-            const anims = document.querySelectorAll('.analyzed > span');
+            anim.style.top = (output.children[i * 2] as HTMLElement).offsetTop - 80 + 'px' ?? '0';
+            anim.style.left = (output.children[i * 2] as HTMLElement).offsetLeft + 'px' ?? '0';
+            p.style.marginLeft = (data.nestings > 0 ? 1 : 0) + 'em';
+            p.style.background = back;
+            p.style.color = fore;
 
-            anims.forEach((anim: Element) => {
-              (anim as HTMLElement).style.visibility = 'hidden';
-            });
+            anim.dataset['nestings'] = data.nestings.toString();
 
-            ps.forEach((p: Element) => {
-              (p as HTMLElement).style.visibility = 'visible';
-            });
+            anim.textContent = chunk;
+            p.textContent = chunk;
+            inside.textContent = ' ' + data.value.type;
+
+            if (oldNestings < data.nestings) {
+              parent = oldP;
+            }
+            while (oldNestings > data.nestings) {
+              parent = oldP = oldP.parentElement?.parentElement as Element;
+              oldNestings--;
+            }
+
+            analyzed.appendChild(anim);
+            p.appendChild(inside);
+            parent.appendChild(p);
+
+            oldP = p;
+            oldNestings = data.nestings;
           }
         });
+
+        const ps = document.querySelectorAll('.analyzed p');
+        const offTop = (ps[0] as HTMLElement).offsetTop;
+        //const top = ps.length == 1 ? (ps[0] as HTMLElement).offsetTop : this.$anime.stagger([(ps[0] as HTMLElement).offsetTop, (ps[ps.length - 1] as HTMLElement).offsetTop]);
+
+        this.$anime
+          .timeline({
+            delay: this.$anime.stagger(50, { start: 100 })
+          })
+          .add({
+            targets: '.analyzed .anim',
+            top: function (el: HTMLElement, i: number) {
+              return offTop + i * 24 + i * 8 - 4 * Number.parseInt(el.dataset['nestings'] ?? '0') + 'px';
+            },
+            left: function (el: HTMLElement, i: number) {
+              return (analyzed.children[1] as HTMLElement).offsetLeft + 4 * Number.parseInt(el.dataset['nestings'] ?? '0') + 'px';
+            },
+            padding: '4px',
+            marginLeft: function (el: HTMLElement) {
+              return el.dataset['nestings'] + 'em';
+            }
+          })
+          .add(
+            {
+              targets: '.analyzed .anim',
+              opacity: [1, 0]
+            },
+            350
+          )
+          .add(
+            {
+              targets: '.analyzed p',
+              opacity: [0, 1]
+            },
+            350
+          );
       }
     }
   },
@@ -178,12 +267,33 @@ export default Vue.extend({
     background-color: #252525;
   }
 
-  &::v-deep > p {
+  &::v-deep p {
+    position: relative;
     margin: 0;
+    padding: 4px;
+    border-radius: 8px;
+    cursor: pointer;
+
+    &::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: #00000000;
+      border-radius: 8px;
+      pointer-events: none;
+    }
+
+    &:hover::before {
+      background: #00000033;
+    }
   }
 
-  &::v-deep > span {
+  &::v-deep .anim {
     position: absolute;
+    z-index: 2;
   }
 }
 </style>

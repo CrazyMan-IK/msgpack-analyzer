@@ -1,11 +1,59 @@
 import Unpacker from './unpacker';
 
-type AnalyzedValue = { type: string; value: any } | AnalyzedValues | AnalyzedValue[];
+type AnalyzedValue = { type: string; value: any } | AnalyzedValues;
 
 // eslint-disable-next-line @typescript-eslint/no-empty-interface
 class AnalyzedValues extends Map<number, AnalyzedValue> {
+  private _get(key: number, nestings: number): { nestings: number; value: AnalyzedValue } | undefined {
+    let res: { nestings: number; value: AnalyzedValue } | undefined;
+
+    if (this.has(key)) {
+      const result = this.get(key);
+
+      if (result === undefined) {
+        return undefined;
+      }
+
+      return { nestings, value: result };
+    } else {
+      for (const val of this) {
+        if ('value' in val[1]) {
+          if (val[1].value instanceof AnalyzedValues) {
+            res = val[1].value._get(key, nestings + 1);
+          }
+          if (res !== undefined) {
+            break;
+          }
+        }
+      }
+    }
+
+    return res;
+  }
+
   public get(key: number): AnalyzedValue | undefined {
-    return { type: 'null', value: null };
+    let res: AnalyzedValue | undefined;
+
+    if (this.has(key)) {
+      return super.get(key);
+    } else {
+      for (const val of this) {
+        if ('value' in val[1]) {
+          if (val[1].value instanceof AnalyzedValues) {
+            res = val[1].value.get(key);
+          }
+          if (res !== undefined) {
+            break;
+          }
+        }
+      }
+    }
+
+    return res;
+  }
+
+  public getWithNestings(key: number): { nestings: number; value: AnalyzedValue } | undefined {
+    return this._get(key, 0);
   }
 }
 
@@ -35,6 +83,20 @@ class Analyzer {
       }
 
       return { type: 'array', value: list };
+    } else if (byte == 0xc4 || byte == 0xc5 || byte == 0xc6) {
+      const val = this._unpacker.unpackBinary();
+
+      if (val != null) {
+        const list = new AnalyzedValues();
+        list.set(this._unpacker.offset - val.length - 1, { type: 'length', value: val.length });
+
+        for (let i = 0; i < val.length; i++) {
+          const off = this._unpacker.offset - (val.length - i);
+          list.set(off, { type: 'byte', value: val[i] });
+        }
+
+        return { type: 'binary', value: list };
+      }
     } else if ((byte & 0xf0) == 0x80 || byte == 0xde || byte == 0xdf) {
       const val = this._unpacker.unpackMapLength();
 
@@ -49,12 +111,10 @@ class Analyzer {
     } else {
       const val = this._unpacker.unpack();
 
-      if (val instanceof Uint8Array) {
-        return { type: 'binary', value: val };
-      }
-
       return { type: typeof val, value: val };
     }
+
+    return { type: 'null', value: null };
   }
 
   public analyze(data: Uint8Array): AnalyzedValues {
