@@ -6,15 +6,17 @@
         <v-text-field filled v-model="input" :rules="[rules.notEmpty, rules.hexChecker, rules.isEven]" @input="analyze"> </v-text-field>
         <p ref="output" class="ma-0 mb-8 pa-3 output"></p>
         <!--<div ref="analyzed" class="pa-3 analyzed"></div>-->
-        <v-item-group v-model="selected" class="pa-3">
-          <v-item :key="i" v-slot="{ toggle, active }" v-for="i in analyzedValues">
-            <v-container>
-              <div @click="toggle" style="cursor: pointer; background: cyan; height: 100px">
-                <div v-if="active" style="background: red; height: 100%"></div>
-              </div>
-            </v-container>
+        <!-- <v-item-group v-model="selected" class="pa-3">
+          <v-item :key="i[0]" v-slot="{ toggle, active }" v-for="i in analyzedValues">
+            <v-row class="ma-0 align-items-stretch fill-width">
+              <v-col @click="toggle" style="cursor: pointer; background: cyan; height: 100%">
+                {{ i }}
+              </v-col>
+              <v-col v-if="active" style="background: red"></v-col>
+            </v-row>
           </v-item>
-        </v-item-group>
+        </v-item-group> -->
+        <analyzed-visualizer :analyzed-values="analyzedValues"></analyzed-visualizer>
       </v-col>
       <v-col class="right-col" cols="auto">
         <h1>This is an main page</h1>
@@ -25,18 +27,20 @@
 
 <script lang="ts">
 import Vue from 'vue';
-import Analyzer, { AnalyzedValues } from '@/analyzer/analyzer';
 import seedrandom from 'seedrandom';
+import Analyzer, { AnalyzedValues } from '@/analyzer/analyzer';
+import AnalyzedVisualizer from '@/components/AnalyzedVisualizer';
 
 export default Vue.extend({
   name: 'Home',
 
-  components: {},
+  components: {
+    AnalyzedVisualizer
+  },
 
   data: () => ({
     input: '9292c37b7b c4024455',
     analyzer: new Analyzer(),
-    selected: -1,
     analyzedValues: new AnalyzedValues(),
     rules: {
       hexChecker: (value: string): string | boolean => {

@@ -2,38 +2,44 @@ import Unpacker from './unpacker';
 
 type AnalyzedValue = { type: string; value: any } | AnalyzedValues;
 
-// eslint-disable-next-line @typescript-eslint/no-empty-interface
-class AnalyzedValues implements Map<number, AnalyzedValue> {
-  clear(): void {
-    throw new Error('Method not implemented.');
-  }
-  delete(key: number): boolean {
-    throw new Error('Method not implemented.');
-  }
-  forEach(callbackfn: (value: AnalyzedValue, key: number, map: Map<number, AnalyzedValue>) => void, thisArg?: any): void {
-    throw new Error('Method not implemented.');
-  }
-  has(key: number): boolean {
-    throw new Error('Method not implemented.');
-  }
-  set(key: number, value: AnalyzedValue): this {
-    throw new Error('Method not implemented.');
-  }
-  size: number = 0;
-  [Symbol.iterator](): IterableIterator<[number, AnalyzedValue]> {
-    throw new Error('Method not implemented.');
-  }
-  entries(): IterableIterator<[number, AnalyzedValue]> {
-    throw new Error('Method not implemented.');
-  }
-  keys(): IterableIterator<number> {
-    throw new Error('Method not implemented.');
-  }
-  values(): IterableIterator<AnalyzedValue> {
-    throw new Error('Method not implemented.');
+class AnalyzedIterator implements IterableIterator<[number, AnalyzedValue]> {
+  private _values: AnalyzedValues; // доступ до итерируемого объекта
+  private _nextIdx: number; // указатель следующего значения
+
+  constructor(values: AnalyzedValues, idx = 0) {
+    this._values = values;
+    this._nextIdx = idx;
   }
 
-  [Symbol.toStringTag]: string;
+  *[Symbol.iterator](): IterableIterator<[number, AnalyzedValue]> {
+    yield [0, { type: 'null', value: null }];
+  }
+
+  next(...args: [] | [undefined]): IteratorResult<[number, AnalyzedValue], any> {
+    if (this._nextIdx === this._values.getRealLength()) {
+      return { value: undefined, done: true }; // проверка на последний элемент
+    }
+
+    const value = this._values.getByIndex(this._nextIdx++);
+
+    if (value === undefined) {
+      return { value: undefined, done: true };
+    }
+
+    return {
+      value: [this._nextIdx - 1, value],
+      done: false
+    };
+  }
+}
+
+// eslint-disable-next-line @typescript-eslint/no-empty-interface
+class AnalyzedValues extends Map<number, AnalyzedValue> {
+  [Symbol.iterator](): IterableIterator<[number, AnalyzedValue]> {
+    return new AnalyzedIterator(this);
+    //yield [0, { type: 'null', value: null }];
+  }
+
   private _get(key: number, nestings: number): { nestings: number; value: AnalyzedValue } | undefined {
     let res: { nestings: number; value: AnalyzedValue } | undefined;
 
@@ -46,7 +52,7 @@ class AnalyzedValues implements Map<number, AnalyzedValue> {
 
       return { nestings, value: result };
     } else {
-      for (const val of this) {
+      for (const val of this.entries()) {
         if ('value' in val[1]) {
           if (val[1].value instanceof AnalyzedValues) {
             res = val[1].value._get(key, nestings + 1);
@@ -61,13 +67,36 @@ class AnalyzedValues implements Map<number, AnalyzedValue> {
     return res;
   }
 
+  private _getByIndex(index: number, current: { value: number }): AnalyzedValue | undefined {
+    let res: AnalyzedValue | undefined;
+
+    for (const val of this.entries()) {
+      if ('value' in val[1]) {
+        if (index == current.value) {
+          return val[1].value;
+        }
+
+        current.value++;
+        if (val[1].value instanceof AnalyzedValues) {
+          res = val[1].value._getByIndex(index, current);
+        }
+
+        if (res !== undefined) {
+          break;
+        }
+      }
+    }
+
+    return res;
+  }
+
   public get(key: number): AnalyzedValue | undefined {
     let res: AnalyzedValue | undefined;
 
     if (this.has(key)) {
       return super.get(key);
     } else {
-      for (const val of this) {
+      for (const val of this.entries()) {
         if ('value' in val[1]) {
           if (val[1].value instanceof AnalyzedValues) {
             res = val[1].value.get(key);
@@ -84,6 +113,26 @@ class AnalyzedValues implements Map<number, AnalyzedValue> {
 
   public getWithNestings(key: number): { nestings: number; value: AnalyzedValue } | undefined {
     return this._get(key, 0);
+  }
+
+  public getByIndex(index: number): AnalyzedValue | undefined {
+    return this._getByIndex(index, { value: 0 });
+  }
+
+  public getRealLength(): number {
+    let res = 0;
+
+    for (const val of this.entries()) {
+      if ('value' in val[1]) {
+        if (val[1].value instanceof AnalyzedValues) {
+          res += val[1].value.getRealLength();
+        }
+
+        res++;
+      }
+    }
+
+    return res;
   }
 }
 
