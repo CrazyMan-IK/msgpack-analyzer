@@ -3,7 +3,37 @@ import Unpacker from './unpacker';
 type AnalyzedValue = { type: string; value: any } | AnalyzedValues;
 
 // eslint-disable-next-line @typescript-eslint/no-empty-interface
-class AnalyzedValues extends Map<number, AnalyzedValue> {
+class AnalyzedValues implements Map<number, AnalyzedValue> {
+  clear(): void {
+    throw new Error('Method not implemented.');
+  }
+  delete(key: number): boolean {
+    throw new Error('Method not implemented.');
+  }
+  forEach(callbackfn: (value: AnalyzedValue, key: number, map: Map<number, AnalyzedValue>) => void, thisArg?: any): void {
+    throw new Error('Method not implemented.');
+  }
+  has(key: number): boolean {
+    throw new Error('Method not implemented.');
+  }
+  set(key: number, value: AnalyzedValue): this {
+    throw new Error('Method not implemented.');
+  }
+  size: number = 0;
+  [Symbol.iterator](): IterableIterator<[number, AnalyzedValue]> {
+    throw new Error('Method not implemented.');
+  }
+  entries(): IterableIterator<[number, AnalyzedValue]> {
+    throw new Error('Method not implemented.');
+  }
+  keys(): IterableIterator<number> {
+    throw new Error('Method not implemented.');
+  }
+  values(): IterableIterator<AnalyzedValue> {
+    throw new Error('Method not implemented.');
+  }
+
+  [Symbol.toStringTag]: string;
   private _get(key: number, nestings: number): { nestings: number; value: AnalyzedValue } | undefined {
     let res: { nestings: number; value: AnalyzedValue } | undefined;
 
@@ -133,3 +163,5 @@ class Analyzer {
 }
 
 export default Analyzer;
+
+export { AnalyzedValues };

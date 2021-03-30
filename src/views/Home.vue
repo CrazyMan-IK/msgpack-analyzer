@@ -1,29 +1,22 @@
 <template>
   <v-container fluid class="home fill-height">
     <v-row class="ma-0 fill-height">
-      <v-col cols="2">
-        <h1>This is an main page</h1>
-      </v-col>
-      <v-col class="d-flex main-content layout column" cols="8">
+      <v-col class="d-flex main-content layout column">
         <h1>This is an main page</h1>
         <v-text-field filled v-model="input" :rules="[rules.notEmpty, rules.hexChecker, rules.isEven]" @input="analyze"> </v-text-field>
         <p ref="output" class="ma-0 mb-8 pa-3 output"></p>
-        <div ref="analyzed" class="pa-3 analyzed">
-          <!--<p class="anim anim-1">12</p>
-          <p>12</p>
-          <p class="anim anim-2">23</p>
-          <p>23</p>
-          <p class="anim anim-3">34</p>
-          <p>34</p>
-          <p class="anim anim-4">45</p>
-          <p>45</p>
-          <p class="anim anim-5">56</p>
-          <p>56</p>
-          <p class="anim anim-6">67</p>
-          <p>67</p>-->
-        </div>
+        <!--<div ref="analyzed" class="pa-3 analyzed"></div>-->
+        <v-item-group v-model="selected" class="pa-3">
+          <v-item :key="i" v-slot="{ toggle, active }" v-for="i in analyzedValues">
+            <v-container>
+              <div @click="toggle" style="cursor: pointer; background: cyan; height: 100px">
+                <div v-if="active" style="background: red; height: 100%"></div>
+              </div>
+            </v-container>
+          </v-item>
+        </v-item-group>
       </v-col>
-      <v-col cols="2">
+      <v-col class="right-col" cols="auto">
         <h1>This is an main page</h1>
       </v-col>
     </v-row>
@@ -32,7 +25,7 @@
 
 <script lang="ts">
 import Vue from 'vue';
-import Analyzer from '@/analyzer/analyzer';
+import Analyzer, { AnalyzedValues } from '@/analyzer/analyzer';
 import seedrandom from 'seedrandom';
 
 export default Vue.extend({
@@ -43,6 +36,8 @@ export default Vue.extend({
   data: () => ({
     input: '9292c37b7b c4024455',
     analyzer: new Analyzer(),
+    selected: -1,
+    analyzedValues: new AnalyzedValues(),
     rules: {
       hexChecker: (value: string): string | boolean => {
         value = value.replaceAll(' ', '');
@@ -120,6 +115,9 @@ export default Vue.extend({
           })
         );
 
+        this.analyzedValues = this.analyzer.analyze(data);
+
+        /*
         const analyzedData = this.analyzer.analyze(data);
 
         this.$anime.remove('.analyzed > span');
@@ -238,12 +236,13 @@ export default Vue.extend({
             },
             350
           );
+          */
       }
     }
   },
 
   mounted(): void {
-    setTimeout(this.analyze, 1000);
+    //setTimeout(this.analyze, 1000);
   }
 });
 </script>
@@ -252,6 +251,10 @@ export default Vue.extend({
 .main-content {
   max-height: 100%;
   overflow-y: auto;
+}
+
+.right-col {
+  width: 400px;
 }
 
 .output {
@@ -295,6 +298,7 @@ export default Vue.extend({
       width: 100%;
       height: 100%;
       background: #00000000;
+      transition: background-color 100ms cubic-bezier(0.445, 0.05, 0.55, 0.95);
     }
 
     & > .overlay:hover,
