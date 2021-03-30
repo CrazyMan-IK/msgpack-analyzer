@@ -152,15 +152,15 @@ export default Vue.extend({
           if (data !== undefined && 'type' in data.value) {
             const anim = document.createElement('span');
             const p = document.createElement('p');
+            const overlay = document.createElement('div');
             const inside = document.createElement('span');
 
             anim.className = 'anim';
+            overlay.className = 'overlay';
 
             const back = this.getRandomColor(data.value.type + data.nestings);
             const bright = this.getColorBrightness(back);
             const fore = bright >= 128 ? '#000000' : '#ffffff';
-
-            console.log(bright);
 
             anim.style.top = (output.children[i * 2] as HTMLElement).offsetTop - 80 + 'px' ?? '0';
             anim.style.left = (output.children[i * 2] as HTMLElement).offsetLeft + 'px' ?? '0';
@@ -171,18 +171,30 @@ export default Vue.extend({
             anim.dataset['nestings'] = data.nestings.toString();
 
             anim.textContent = chunk;
-            p.textContent = chunk;
-            inside.textContent = ' ' + data.value.type;
+            //p.textContent = `${chunk} ${data.value.type}`;
+            inside.textContent = `${chunk} ${data.value.type}`;
 
             if (oldNestings < data.nestings) {
               parent = oldP;
             }
             while (oldNestings > data.nestings) {
-              parent = oldP = oldP.parentElement?.parentElement as Element;
+              oldP = oldP.parentElement as Element;
+
+              parent = oldP.parentElement;
+
               oldNestings--;
             }
 
+            if (oldP instanceof HTMLParagraphElement && oldNestings == data.nestings) {
+              oldP.style.borderBottomRightRadius = '0px';
+              oldP.style.borderBottomLeftRadius = '0px';
+
+              p.style.borderTopLeftRadius = '0px';
+              p.style.borderTopRightRadius = '0px';
+            }
+
             analyzed.appendChild(anim);
+            p.appendChild(overlay);
             p.appendChild(inside);
             parent.appendChild(p);
 
@@ -204,7 +216,7 @@ export default Vue.extend({
             top: function (el: HTMLElement, i: number) {
               return offTop + i * 24 + i * 8 - 4 * Number.parseInt(el.dataset['nestings'] ?? '0') + 'px';
             },
-            left: function (el: HTMLElement, i: number) {
+            left: function (el: HTMLElement) {
               return (analyzed.children[1] as HTMLElement).offsetLeft + 4 * Number.parseInt(el.dataset['nestings'] ?? '0') + 'px';
             },
             padding: '4px',
@@ -272,9 +284,10 @@ export default Vue.extend({
     margin: 0;
     padding: 4px;
     border-radius: 8px;
+    overflow: hidden;
     cursor: pointer;
 
-    &::before {
+    & > .overlay {
       content: '';
       position: absolute;
       top: 0;
@@ -282,18 +295,24 @@ export default Vue.extend({
       width: 100%;
       height: 100%;
       background: #00000000;
-      border-radius: 8px;
-      pointer-events: none;
     }
 
-    &:hover::before {
+    & > .overlay:hover,
+    &.active > .overlay {
       background: #00000033;
+    }
+
+    & span {
+      position: relative;
+      display: inline-block;
+      cursor: text;
     }
   }
 
   &::v-deep .anim {
     position: absolute;
-    z-index: 2;
+    z-index: 99;
+    pointer-events: none;
   }
 }
 </style>
