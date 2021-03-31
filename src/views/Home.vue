@@ -246,7 +246,7 @@ export default Vue.extend({
   },
 
   mounted(): void {
-    //setTimeout(this.analyze, 1000);
+    setTimeout(this.analyze, 1000);
   }
 });
 </script>
