@@ -5,7 +5,10 @@ module.exports = {
   },
   extends: ['plugin:vue/essential', 'eslint:recommended', '@vue/typescript/recommended', '@vue/prettier', '@vue/prettier/@typescript-eslint'],
   parserOptions: {
-    ecmaVersion: 2020
+    ecmaVersion: 2020,
+    ecmaFeatures: {
+      jsx: true
+    }
   },
   rules: {
     'prettier/prettier': [

@@ -3,8 +3,8 @@ import Unpacker from './unpacker';
 type AnalyzedValue = { type: string; value: any } | AnalyzedValues;
 
 class AnalyzedIterator implements IterableIterator<[number, AnalyzedValue]> {
-  private _values: AnalyzedValues; // доступ до итерируемого объекта
-  private _nextIdx: number; // указатель следующего значения
+  private _values: AnalyzedValues;
+  private _nextIdx: number;
 
   constructor(values: AnalyzedValues, idx = 0) {
     this._values = values;
@@ -17,7 +17,7 @@ class AnalyzedIterator implements IterableIterator<[number, AnalyzedValue]> {
 
   next(...args: [] | [undefined]): IteratorResult<[number, AnalyzedValue], any> {
     if (this._nextIdx === this._values.getRealLength()) {
-      return { value: undefined, done: true }; // проверка на последний элемент
+      return { value: undefined, done: true };
     }
 
     const value = this._values.getByIndex(this._nextIdx++);

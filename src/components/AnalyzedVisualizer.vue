@@ -37,28 +37,50 @@ export default Vue.extend({
 		</template>
 		*/
 
-    const items = [];
-    for (const value of this.analyzedValues) {
-      const slots = {
-        default: (scope) => {
-          return (
-            <div onClick={scope.toggle} class="mb-8" style={{ cursor: 'pointer', height: '2em', background: scope.active ? 'red' : 'cyan' }}>
-              {value[1].toString()} {scope.active.toString()}
-            </div>
-          );
-        }
-      };
+    const getItems = (i = 0) => {
+      if (i > 1) {
+        return;
+      }
 
-      items.push(<v-item scopedSlots={slots}></v-item>);
-    }
+      const items = [];
+      for (const value of this.analyzedValues) {
+        const slots = {
+          default: (scope) => {
+            return (
+              <p
+                onClick={(e: Event) => {
+                  e.stopPropagation();
+                  scope.toggle();
+                }}
+                class="mb-0"
+                style={{ cursor: 'pointer', background: scope.active ? 'red' : i == 1 ? 'orange' : 'cyan' }}
+              >
+                {value[1].toString()} {scope.active.toString()} {getItems(i + 1)}
+              </p>
+            );
+          }
+        };
 
-    console.log(items);
+        items.push(<v-item scopedSlots={slots}></v-item>);
+      }
+
+      console.log(items);
+
+      return items;
+    };
 
     return (
       <v-item-group v-model={this.selected} class="pa-3">
-        {items}
+        {getItems()}
       </v-item-group>
     );
   }
 });
 </script>
+
+<style lang="scss" scoped>
+.v-item-group {
+  position: relative;
+  flex-basis: 100%;
+}
+</style>
