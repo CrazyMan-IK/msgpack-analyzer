@@ -37,13 +37,13 @@ export default Vue.extend({
 		</template>
 		*/
 
-    const getItems = (i = 0) => {
+    const getItems = (values: AnalyzedValues, i = 0) => {
       if (i > 1) {
         return;
       }
 
       const items = [];
-      for (const value of this.analyzedValues) {
+      for (const value of this.analyzedValues.entries()) {
         const slots = {
           default: (scope) => {
             return (
@@ -63,8 +63,6 @@ export default Vue.extend({
 
         items.push(<v-item scopedSlots={slots}></v-item>);
       }
-
-      console.log(items);
 
       return items;
     };
