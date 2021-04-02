@@ -40,14 +40,25 @@ export default Vue.extend({
 		</template>
 		*/
 
-    const getItems = (values: AnalyzedValues, i = 0) => {
-      if (i > 1) {
-        return;
+    let ind = 0;
+    const anims = [];
+    const getItems = (values: AnalyzedValues, i = 0, prevPar = null, parentValues = values) => {
+      if (!(values instanceof Map)) {
+        return undefined;
       }
 
+      let localInd = 0;
       const items = [];
+      this.$refs['container'] = [];
       for (const value of values.entries()) {
-        const innerItems = getItems(values, i + 1);
+        anims.push(
+          <span data-index={ind} data-nestings={i} style={{ top: (this.output.children[ind * 2] as HTMLElement).offsetTop - 80 + 'px' ?? '0', left: (this.output.children[ind * 2] as HTMLElement).offsetLeft + 'px' ?? '0' }} class="anim">
+            {this.chunks[value[0]]}
+          </span>
+        );
+
+        const currentInd = localInd;
+        const innerItems = getItems(value[1].value, i + 1, prevPar, values);
 
         const slots = {
           default: (scope) => {
@@ -55,14 +66,14 @@ export default Vue.extend({
             const bright = this.getColorBrightness(back);
             const fore = bright >= 128 ? '#000000' : '#ffffff';
 
-            return (
+            const result = (
               <p
                 onClick={(e: Event) => {
                   e.stopPropagation();
                   scope.toggle();
                 }}
                 class="mb-0"
-                style={{ opacity: '0', color: fore, background: back, 'margin-left': (i > 0 ? 1 : 0) + 'em' }}
+                style={{ borderTopLeftRadius: prevPar != null ? 0 : undefined, borderTopRightRadius: prevPar != null ? 0 : undefined, borderBottomLeftRadius: currentInd != values.size - 1 && parentValues.size > 1 ? 0 : undefined, borderBottomRightRadius: currentInd != values.size - 1 && parentValues.size > 1 ? 0 : undefined, opacity: '1', color: fore, background: back, 'margin-left': (i > 0 ? 1 : 0) + 'em' }}
               >
                 <div class="overlay"></div>
                 <span>
@@ -71,70 +82,30 @@ export default Vue.extend({
                 {innerItems}
               </p>
             );
+
+            prevPar = result;
+            this.$refs['container'].push(result);
+            return result;
           }
         };
 
         items.push(<v-item scopedSlots={slots}></v-item>);
-        items.push.apply(items, innerItems);
+        ind++;
+        localInd++;
       }
 
       return items;
     };
 
     const items = getItems(this.analyzedValues);
-    console.log(items);
+    this.$refs['anim'] = anims;
 
-    const anims = [];
-    for (const value of this.analyzedValues) {
-      anims.push(<span class="anim">{this.chunks[value[0]]}</span>);
-    }
-
-    const root = (
+    return (
       <v-item-group v-model={this.selected} class="pa-3 analyzed">
         {anims}
         {items}
       </v-item-group>
     );
-
-    setTimeout(() => {
-      //const ps = document.querySelectorAll('.analyzed p');
-      //const offTop = (ps[0] as HTMLElement).offsetTop;
-      //const top = ps.length == 1 ? (ps[0] as HTMLElement).offsetTop : this.$anime.stagger([(ps[0] as HTMLElement).offsetTop, (ps[ps.length - 1] as HTMLElement).offsetTop]);
-
-      this.$anime
-        .timeline({
-          delay: this.$anime.stagger(50, { start: 100 })
-        })
-        .add({
-          targets: anims.map((x) => x.elm)
-          /*top: function (el: HTMLElement, i: number) {
-            return offTop + i * 24 + i * 8 - 4 * Number.parseInt(el.dataset['nestings'] ?? '0') + 'px';
-          },
-          left: function (el: HTMLElement) {
-            return (analyzed.children[1] as HTMLElement).offsetLeft + 4 * Number.parseInt(el.dataset['nestings'] ?? '0') + 'px';
-          },
-          padding: '4px',
-          marginLeft: function (el: HTMLElement) {
-            return el.dataset['nestings'] + 'em';
-          }*/
-        })
-        .add(
-          {
-            targets: anims.map((x) => x.elm),
-            opacity: [1, 0]
-          },
-          350
-        )
-        .add(
-          {
-            targets: items.map((x) => x.elm),
-            opacity: [0, 1]
-          },
-          350
-        );
-    }, 1);
-
-    return root;
   },
 
   methods: {

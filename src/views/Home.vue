@@ -16,7 +16,7 @@
             </v-row>
           </v-item>
         </v-item-group> -->
-        <analyzed-visualizer :output="$refs['output']" :chunks="chunks" :analyzed-values="analyzedValues"></analyzed-visualizer>
+        <analyzed-visualizer ref="analyzed" :output="$refs['output']" :chunks="chunks" :analyzed-values="analyzedValues"></analyzed-visualizer>
       </v-col>
       <v-col class="right-col" cols="auto">
         <h1>This is an main page</h1>
@@ -141,6 +141,48 @@ export default Vue.extend({
         });
 
         output.lastChild?.remove();
+
+        Vue.nextTick(() => {
+          const analyzed = this.$refs['analyzed'] as Vue;
+          const anims = analyzed.$refs['anim'].map((x) => x.elm);
+          const containers = analyzed.$refs['container'].map((x) => x.elm);
+
+          const offTop = (containers[0] as HTMLElement).offsetTop;
+
+          this.$anime.remove(anims);
+
+          this.$anime
+            .timeline({
+              delay: this.$anime.stagger(50, { start: 100 })
+            })
+            .add({
+              targets: anims,
+              top: function (el: HTMLElement, i: number) {
+                return offTop + i * 24 + i * 8 - 4 * Number.parseInt(el.dataset['nestings'] ?? '0') + 'px';
+              },
+              left: function (el: HTMLElement, i: number) {
+                return (containers[0] as HTMLElement).offsetLeft + 4 * Number.parseInt(el.dataset['nestings'] ?? '0') + 'px';
+              },
+              padding: '4px',
+              marginLeft: function (el: HTMLElement) {
+                return el.dataset['nestings'] + 'em';
+              }
+            })
+            .add(
+              {
+                targets: anims,
+                opacity: [1, 1]
+              },
+              350
+            )
+            .add(
+              {
+                targets: containers,
+                opacity: [0, 1]
+              },
+              350
+            );
+        });
 
         /*
         const analyzed = this.$refs['analyzed'] as Element;
