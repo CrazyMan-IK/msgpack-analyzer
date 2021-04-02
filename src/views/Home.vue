@@ -16,7 +16,7 @@
             </v-row>
           </v-item>
         </v-item-group> -->
-        <analyzed-visualizer :analyzed-values="analyzedValues"></analyzed-visualizer>
+        <analyzed-visualizer :output="$refs['output']" :chunks="chunks" :analyzed-values="analyzedValues"></analyzed-visualizer>
       </v-col>
       <v-col class="right-col" cols="auto">
         <h1>This is an main page</h1>
@@ -41,6 +41,7 @@ export default Vue.extend({
   data: () => ({
     input: '9292c37b7b c4024455',
     analyzer: new Analyzer(),
+    chunks: [],
     analyzedValues: new AnalyzedValues(),
     rules: {
       hexChecker: (value: string): string | boolean => {
@@ -112,24 +113,23 @@ export default Vue.extend({
 
     analyze(): void {
       if (this.rules.notEmpty(this.input) === true && this.rules.hexChecker(this.input) === true && this.rules.isEven(this.input) === true) {
-        const chunks = this.splitByChunks(this.input.replaceAll(' ', ''), 2);
+        this.chunks = this.splitByChunks(this.input.replaceAll(' ', ''), 2);
         const data = Uint8Array.from(
-          chunks.map((x: string) => {
+          this.chunks.map((x: string) => {
             return Number.parseInt(x, 16);
           })
         );
 
         this.analyzedValues = this.analyzer.analyze(data);
 
-        /*
-        const analyzedData = this.analyzer.analyze(data);
+        //const analyzedData = this.analyzer.analyze(data);
 
-        this.$anime.remove('.analyzed > span');
+        //this.$anime.remove('.analyzed > span');
 
         const output = this.$refs['output'] as Element;
         output.textContent = '';
 
-        chunks.forEach((chunk: string) => {
+        this.chunks.forEach((chunk: string) => {
           const span = document.createElement('span');
           const space = document.createElement('span');
 
@@ -142,6 +142,7 @@ export default Vue.extend({
 
         output.lastChild?.remove();
 
+        /*
         const analyzed = this.$refs['analyzed'] as Element;
         analyzed.textContent = '';
 
