@@ -145,7 +145,22 @@ export default Vue.extend({
         Vue.nextTick(() => {
           const analyzed = this.$refs['analyzed'] as Vue;
           const anims = analyzed.$refs['anim'].map((x) => x.elm);
-          const containers = analyzed.$refs['container'].map((x) => x.elm);
+          const containers = analyzed.$refs['container']
+            .map((x) => x.elm)
+            .sort((a, b) => {
+              const i1 = Number.parseInt(a.dataset['index']);
+              const i2 = Number.parseInt(b.dataset['index']);
+
+              if (i1 < i2) {
+                return -1;
+              }
+
+              if (i1 > i2) {
+                return 1;
+              }
+
+              return 0;
+            });
 
           const offTop = (containers[0] as HTMLElement).offsetTop;
 
@@ -157,21 +172,34 @@ export default Vue.extend({
             })
             .add({
               targets: anims,
-              top: function (el: HTMLElement, i: number) {
-                return offTop + i * 24 + i * 8 - 4 * Number.parseInt(el.dataset['nestings'] ?? '0') + 'px';
-              },
-              left: function (el: HTMLElement, i: number) {
-                return (containers[0] as HTMLElement).offsetLeft + 4 * Number.parseInt(el.dataset['nestings'] ?? '0') + 'px';
-              },
-              padding: '4px',
-              marginLeft: function (el: HTMLElement) {
-                return el.dataset['nestings'] + 'em';
-              }
+              top: [
+                function (el: HTMLElement, i: number) {
+                  return (output.children[i * 2] as HTMLElement).offsetTop - (output.offsetHeight + 32) + 'px' ?? '0';
+                },
+                function (el: HTMLElement, i: number) {
+                  return offTop + i * 24 + i * 8 - 4 * Number.parseInt(el.dataset['nestings'] ?? '0') + 'px';
+                }
+              ],
+              left: [
+                function (el: HTMLElement, i: number) {
+                  return (output.children[i * 2] as HTMLElement).offsetLeft + 'px' ?? '0';
+                },
+                function (el: HTMLElement, i: number) {
+                  return (containers[0] as HTMLElement).offsetLeft + 4 * Number.parseInt(el.dataset['nestings'] ?? '0') + 'px';
+                }
+              ],
+              padding: [0, '4px'],
+              marginLeft: [
+                0,
+                function (el: HTMLElement) {
+                  return el.dataset['nestings'] + 'em';
+                }
+              ]
             })
             .add(
               {
                 targets: anims,
-                opacity: [1, 1]
+                opacity: [1, 0]
               },
               350
             )

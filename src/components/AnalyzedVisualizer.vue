@@ -42,7 +42,7 @@ export default Vue.extend({
 
     let ind = 0;
     const anims = [];
-    const getItems = (values: AnalyzedValues, i = 0, prevPar = null, parentValues = values) => {
+    const getItems = (values: AnalyzedValues, i = 0, parentValues = values) => {
       if (!(values instanceof Map)) {
         return undefined;
       }
@@ -52,13 +52,21 @@ export default Vue.extend({
       this.$refs['container'] = [];
       for (const value of values.entries()) {
         anims.push(
-          <span data-index={ind} data-nestings={i} style={{ top: (this.output.children[ind * 2] as HTMLElement).offsetTop - 80 + 'px' ?? '0', left: (this.output.children[ind * 2] as HTMLElement).offsetLeft + 'px' ?? '0' }} class="anim">
+          <span
+            data-nestings={i}
+            style={{
+              top: (this.output.children[ind * 2] as HTMLElement).offsetTop - (this.output.offsetHeight + 32) + 'px' ?? '0',
+              left: (this.output.children[ind * 2] as HTMLElement).offsetLeft + 'px' ?? '0'
+            }}
+            class="anim"
+          >
             {this.chunks[value[0]]}
           </span>
         );
 
-        const currentInd = localInd;
-        const innerItems = getItems(value[1].value, i + 1, prevPar, values);
+        const currentInd = ind++;
+        const currentLocalInd = localInd;
+        const innerItems = getItems(value[1].value, i + 1, values);
 
         const slots = {
           default: (scope) => {
@@ -72,25 +80,34 @@ export default Vue.extend({
                   e.stopPropagation();
                   scope.toggle();
                 }}
+                data-index={currentInd}
                 class="mb-0"
-                style={{ borderTopLeftRadius: prevPar != null ? 0 : undefined, borderTopRightRadius: prevPar != null ? 0 : undefined, borderBottomLeftRadius: currentInd != values.size - 1 && parentValues.size > 1 ? 0 : undefined, borderBottomRightRadius: currentInd != values.size - 1 && parentValues.size > 1 ? 0 : undefined, opacity: '1', color: fore, background: back, 'margin-left': (i > 0 ? 1 : 0) + 'em' }}
+                style={{
+                  borderTopLeftRadius: currentLocalInd > 0 ? 0 : undefined,
+                  borderTopRightRadius: currentLocalInd > 0 ? 0 : undefined,
+                  borderBottomLeftRadius: currentLocalInd != values.size - 1 && parentValues.size > 1 ? 0 : undefined,
+                  borderBottomRightRadius: currentLocalInd != values.size - 1 && parentValues.size > 1 ? 0 : undefined,
+                  opacity: '1',
+                  color: fore,
+                  background: back,
+                  'margin-left': (i > 0 ? 1 : 0) + 'em'
+                }}
               >
                 <div class="overlay"></div>
                 <span>
-                  {this.chunks[value[0]]} {value[1].type}
+                  {this.chunks[value[0]]} {value[1].type} {currentInd}
                 </span>
                 {innerItems}
               </p>
             );
 
-            prevPar = result;
             this.$refs['container'].push(result);
             return result;
           }
         };
 
         items.push(<v-item scopedSlots={slots}></v-item>);
-        ind++;
+        //ind++;
         localInd++;
       }
 
