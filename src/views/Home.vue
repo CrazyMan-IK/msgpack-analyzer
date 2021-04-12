@@ -29,7 +29,7 @@
 import Vue from 'vue';
 import seedrandom from 'seedrandom';
 import Analyzer, { AnalyzedValues } from '@/analyzer/analyzer';
-import AnalyzedVisualizer from '@/components/AnalyzedVisualizer';
+import AnalyzedVisualizer from '@/components/AnalyzedVisualizer.vue';
 
 export default Vue.extend({
   name: 'Home',
