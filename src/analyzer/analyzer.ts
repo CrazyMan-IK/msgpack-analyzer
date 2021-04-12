@@ -33,7 +33,6 @@ class AnalyzedIterator implements IterableIterator<[number, AnalyzedValue]> {
   }
 }
 
-// eslint-disable-next-line @typescript-eslint/no-empty-interface
 class AnalyzedValues extends Map<number, AnalyzedValue> {
   [Symbol.iterator](): IterableIterator<[number, AnalyzedValue]> {
     return new AnalyzedIterator(this);
