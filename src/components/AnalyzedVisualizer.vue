@@ -49,7 +49,6 @@ export default Vue.extend({
 
       let localInd = 0;
       const items = [];
-      this.$refs['container'] = [];
       for (const value of values.entries()) {
         anims.push(
           <span
@@ -70,11 +69,11 @@ export default Vue.extend({
 
         const slots = {
           default: (scope) => {
-            const back = this.getRandomColor(value[1].type + i);
+            const back = scope.active ? 'black' : this.getRandomColor(value[1].type + i);
             const bright = this.getColorBrightness(back);
             const fore = bright >= 128 ? '#000000' : '#ffffff';
 
-            const result = (
+            return (
               <p
                 onClick={(e: Event) => {
                   e.stopPropagation();
@@ -100,14 +99,19 @@ export default Vue.extend({
                 {innerItems}
               </p>
             );
-
-            this.$refs['container'].push(result);
-            return result;
           }
         };
 
-        items.push(<v-item scopedSlots={slots}></v-item>);
-        //ind++;
+        items.push(
+          <v-item
+            onChange={(e: Event) => {
+              this.selected = currentInd;
+              this.$emit('input', currentInd);
+            }}
+            scopedSlots={slots}
+            value={currentInd}
+          ></v-item>
+        );
         localInd++;
       }
 
@@ -116,9 +120,10 @@ export default Vue.extend({
 
     const items = getItems(this.analyzedValues);
     this.$refs['anim'] = anims;
+    this.$refs['container'] = items;
 
     return (
-      <v-item-group v-model={this.selected} class="pa-3 analyzed">
+      <v-item-group mandatory value={this.selected} class="pa-3 analyzed">
         {anims}
         {items}
       </v-item-group>
@@ -170,7 +175,7 @@ export default Vue.extend({
 </script>
 
 <style lang="scss" scoped>
-.v-item-group {
+.analyzed {
   position: relative;
   flex-basis: 100%;
 }

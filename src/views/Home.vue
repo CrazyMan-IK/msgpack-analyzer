@@ -16,10 +16,10 @@
             </v-row>
           </v-item>
         </v-item-group> -->
-        <analyzed-visualizer ref="analyzed" :output="$refs['output']" :chunks="chunks" :analyzed-values="analyzedValues"></analyzed-visualizer>
+        <analyzed-visualizer v-model="selected" ref="analyzed" :output="$refs['output']" :chunks="chunks" :analyzed-values="analyzedValues"></analyzed-visualizer>
       </v-col>
       <v-col class="right-col" cols="auto">
-        <h1>This is an main page</h1>
+        <h1>{{ selected }}</h1>
       </v-col>
     </v-row>
   </v-container>
@@ -43,6 +43,7 @@ export default Vue.extend({
     analyzer: new Analyzer(),
     chunks: [],
     analyzedValues: new AnalyzedValues(),
+    selected: -1,
     rules: {
       hexChecker: (value: string): string | boolean => {
         value = value.replaceAll(' ', '');
@@ -145,22 +146,7 @@ export default Vue.extend({
         Vue.nextTick(() => {
           const analyzed = this.$refs['analyzed'] as Vue;
           const anims = analyzed.$refs['anim'].map((x) => x.elm);
-          const containers = analyzed.$refs['container']
-            .map((x) => x.elm)
-            .sort((a, b) => {
-              const i1 = Number.parseInt(a.dataset['index']);
-              const i2 = Number.parseInt(b.dataset['index']);
-
-              if (i1 < i2) {
-                return -1;
-              }
-
-              if (i1 > i2) {
-                return 1;
-              }
-
-              return 0;
-            });
+          const containers = analyzed.$refs['container'].map((x) => x.elm);
 
           const offTop = (containers[0] as HTMLElement).offsetTop;
 
