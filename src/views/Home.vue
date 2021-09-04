@@ -321,7 +321,7 @@ export default Vue.extend({
 .output {
   position: relative;
   flex-basis: 48px;
-  border-radius: 30px;
+  border-radius: 8px;
   background-color: #ececec;
 
   .theme--dark & {
@@ -336,7 +336,7 @@ export default Vue.extend({
 .analyzed {
   position: relative;
   flex-basis: 100%;
-  border-radius: 30px;
+  border-radius: 8px;
   background-color: #ececec;
 
   .theme--dark & {
